@@ -17,6 +17,9 @@ import androidx.fragment.app.Fragment;
 
 import org.maktab.sunset.databinding.FragmentSunsetBinding;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SunsetFragment extends Fragment {
 
     private FragmentSunsetBinding mBinding;
@@ -70,8 +73,8 @@ public class SunsetFragment extends Fragment {
                 sunStartY = mBinding.sun.getTop(); //10.000
                 sunEndY = mBinding.sea.getTop();
 
-                shadowStartY = mBinding.sea.getBottom(); //10.000
-                shadowEndY = mBinding.sea.getTop();
+                shadowStartY = mBinding.shadow.getBottom(); //10.000
+                shadowEndY = mBinding.sky.getBottom();
 
                 if (mSkyRise) {
                     mSkyRise = false;
@@ -101,15 +104,15 @@ public class SunsetFragment extends Fragment {
 
         ObjectAnimator reverseHeightShadowAnimator = ObjectAnimator
                 .ofFloat(mBinding.shadow, "y", shadowEndY, shadowStartY)
-                .setDuration(4000);
+                .setDuration(3000);
         reverseHeightShadowAnimator.setInterpolator(new AccelerateInterpolator());
+        reverseHeightShadowAnimator.start();
 
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet
                 .play(reverseHeightAnimator)
-                .with(sunriseAnimator)
-                .with(reverseHeightShadowAnimator);
+                .with(sunriseAnimator);
      /*   animatorSet
                 .play(reverseHeightAnimator)
                 .with(reverseHeightShadowAnimator);*/
@@ -120,9 +123,10 @@ public class SunsetFragment extends Fragment {
     private void startSunset() {
 
         ObjectAnimator reverseHeightShadowAnimator = ObjectAnimator
-                .ofFloat(mBinding.shadow, "y", shadowStartY, shadowEndY)
-                .setDuration(4000);
+                .ofFloat(mBinding.shadow, "y", shadowStartY,shadowEndY)
+                .setDuration(3000);
         reverseHeightShadowAnimator.setInterpolator(new AccelerateInterpolator());
+        reverseHeightShadowAnimator.start();
 
 
         ObjectAnimator heightAnimator = ObjectAnimator
@@ -140,9 +144,9 @@ public class SunsetFragment extends Fragment {
                 .setDuration(3000);
         nightAnimator.setEvaluator(new ArgbEvaluator());
         AnimatorSet animatorSet = new AnimatorSet();
+
         animatorSet
                 .play(heightAnimator)
-                .with(reverseHeightShadowAnimator)
                 .with(sunsetAnimator)
                 .before(nightAnimator);
         animatorSet.start();
@@ -151,7 +155,6 @@ public class SunsetFragment extends Fragment {
                 .play(heightAnimator)
                 .with(reverseHeightShadowAnimator);*/
 
-        animatorSet.start();
     }
 
     private void startAnimation() {
