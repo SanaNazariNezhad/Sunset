@@ -1,5 +1,6 @@
 package org.maktab.sunset;
 
+import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
@@ -9,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
+import android.widget.Toast;
 
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
@@ -22,6 +24,12 @@ public class SunsetFragment extends Fragment {
     private int mBlueSkyColor;
     private int mSunsetSkyColor;
     private int mNightSkyColor;
+    private boolean mFlagStart;
+    private boolean mSkyRise;
+    private float sunStartY;
+    private float sunEndY;
+    private float shadowStartY;
+    private float shadowEndY;
 
     public SunsetFragment() {
         // Required empty public constructor
@@ -52,15 +60,98 @@ public class SunsetFragment extends Fragment {
         mBlueSkyColor = resources.getColor(R.color.blue_sky);
         mSunsetSkyColor = resources.getColor(R.color.sunset_sky);
         mNightSkyColor = resources.getColor(R.color.night_sky);
+        mSkyRise = true;
+        mFlagStart = false;
+
 
         mBinding.getRoot().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startAnimation();
+                sunStartY = mBinding.sun.getTop(); //10.000
+                sunEndY = mBinding.sea.getTop();
+
+                shadowStartY = mBinding.sea.getBottom(); //10.000
+                shadowEndY = mBinding.sea.getTop();
+
+                if (mSkyRise) {
+                    mSkyRise = false;
+                    startSunset();
+                } else {
+                    mSkyRise = true;
+                    startSunrise();
+                }
+//                startAnimation();
             }
         });
 
         return mBinding.getRoot();
+    }
+
+    private void startSunrise() {
+
+        ObjectAnimator reverseHeightAnimator = ObjectAnimator
+                .ofFloat(mBinding.sun, "y", sunEndY, sunStartY)
+                .setDuration(4000);
+        reverseHeightAnimator.setInterpolator(new AccelerateInterpolator());
+
+        ObjectAnimator sunriseAnimator = ObjectAnimator
+                .ofInt(mBinding.sky, "backgroundColor", mNightSkyColor, mSunsetSkyColor, mBlueSkyColor)
+                .setDuration(4000);
+        sunriseAnimator.setEvaluator(new ArgbEvaluator());
+
+        ObjectAnimator reverseHeightShadowAnimator = ObjectAnimator
+                .ofFloat(mBinding.shadow, "y", shadowEndY, shadowStartY)
+                .setDuration(4000);
+        reverseHeightShadowAnimator.setInterpolator(new AccelerateInterpolator());
+
+
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet
+                .play(reverseHeightAnimator)
+                .with(sunriseAnimator)
+                .with(reverseHeightShadowAnimator);
+     /*   animatorSet
+                .play(reverseHeightAnimator)
+                .with(reverseHeightShadowAnimator);*/
+
+        animatorSet.start();
+    }
+
+    private void startSunset() {
+
+        ObjectAnimator reverseHeightShadowAnimator = ObjectAnimator
+                .ofFloat(mBinding.shadow, "y", shadowStartY, shadowEndY)
+                .setDuration(4000);
+        reverseHeightShadowAnimator.setInterpolator(new AccelerateInterpolator());
+
+
+        ObjectAnimator heightAnimator = ObjectAnimator
+                .ofFloat(mBinding.sun, "y", sunStartY, sunEndY)
+                .setDuration(4000);
+        heightAnimator.setInterpolator(new AccelerateInterpolator());
+
+        ObjectAnimator sunsetAnimator = ObjectAnimator
+                .ofInt(mBinding.sky, "backgroundColor", mBlueSkyColor, mSunsetSkyColor)
+                .setDuration(4000);
+        sunsetAnimator.setEvaluator(new ArgbEvaluator());
+
+        ObjectAnimator nightAnimator = ObjectAnimator
+                .ofInt(mBinding.sky, "backgroundColor", mSunsetSkyColor, mNightSkyColor)
+                .setDuration(3000);
+        nightAnimator.setEvaluator(new ArgbEvaluator());
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet
+                .play(heightAnimator)
+                .with(reverseHeightShadowAnimator)
+                .with(sunsetAnimator)
+                .before(nightAnimator);
+        animatorSet.start();
+
+       /* animatorSet
+                .play(heightAnimator)
+                .with(reverseHeightShadowAnimator);*/
+
+        animatorSet.start();
     }
 
     private void startAnimation() {
